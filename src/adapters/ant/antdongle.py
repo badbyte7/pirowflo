@@ -118,6 +118,8 @@ class clsAntDongle():
         self.DeviceID = DeviceID
         self.OK = True  # Otherwise we're disabled!!
         self.OK = self.__GetDongle()
+        if self.Message != '':
+            print(self.Message)
 
     # -----------------------------------------------------------------------
     # G e t D o n g l e
@@ -138,11 +140,11 @@ class clsAntDongle():
         self.DongleReconnected = False
 
         if self.DeviceID == None:
-            dongles = {(4104, "Suunto"), (4105, "Garmin"), (4100, "Older")}
-            #print(dongles)
+            dongles = {(4104, "Suunto"), (4105, "Garmin"), (4100, "Older"), (1009, "NewG")}
         else:
             dongles = {(self.DeviceID, "(provided)")}
 
+        print(dongles)
         # -------------------------------------------------------------------
         # https://github.com/pyusb/pyusb/blob/master/docs/tutorial.rst
         # -------------------------------------------------------------------
@@ -160,6 +162,7 @@ class clsAntDongle():
                 # -----------------------------------------------------------
                 self.Message = "No (free) ANT-dongle found"
                 devAntDongles = usb.core.find(find_all=True, idProduct=ant_pid)
+                #print(devAntDongles)
             except Exception as e:
                 if "AttributeError" in str(e):
                     self.Message = "GetDongle - Could not find dongle: " + str(e)
@@ -168,13 +171,14 @@ class clsAntDongle():
                 else:
                     self.Message = "GetDongle: " + str(e)
             else:
+                #print("else")
                 # -----------------------------------------------------------
                 # Try all dongles of this type (as returned by usb.core.find)
                 # -----------------------------------------------------------
                 for self.devAntDongle in devAntDongles:
 
-                        # prints "DEVICE ID 0fcf:1009 on Bus 000 Address 001 ================="
-                        # But .Bus and .Address not found for logging
+                    # prints "DEVICE ID 0fcf:1009 on Bus 000 Address 001 ================="
+                    # But .Bus and .Address not found for logging
                     # -------------------------------------------------------
                     # Initialize the dongle
                     # -------------------------------------------------------
@@ -185,7 +189,11 @@ class clsAntDongle():
                         if os.name == 'posix':
                             for config in self.devAntDongle:
                                 for i in range(config.bNumInterfaces):
+                                    print(self.devAntDongle)
+                                    print(type(self.devAntDongle))
+
                                     if self.devAntDongle.is_kernel_driver_active(i):
+                                        print("kernelIsActive is true")
                                         self.devAntDongle.detach_kernel_driver(i)
                         # -------------------------------------------------------
                         self.devAntDongle.set_configuration()
@@ -222,6 +230,7 @@ class clsAntDongle():
                         self.Message = "GetDongle - ANT dongle in use"
 
                     except Exception as e:
+                        print("e2")
                         self.Message = "GetDongle: " + str(e)
 
                     # -------------------------------------------------------
@@ -256,6 +265,7 @@ class clsAntDongle():
     # -----------------------------------------------------------------------
     def Write(self, messages, receive=True, drop=True):
         rtn = []
+        #print("write")
         #print(self.OK)
         if self.OK:  # If no dongle ==> no action at all
 
